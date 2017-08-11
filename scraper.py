@@ -39,7 +39,8 @@ headers = {
     'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8',
     'Accept-Encoding': 'gzip, deflate, br',
     'Accept-Language': 'en-GB,en-US;q=0.8,en;q=0.6',
-    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.90 Safari/537.36'
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) '
+                  'Chrome/60.0.3112.90 Safari/537.36'
 }
 
 # Define a persistent session for requests, apply headers to this session:
@@ -185,11 +186,10 @@ def print_report(report_data):
 
 def main():
 
-    urls = [
-        'https://www.airbnb.co.uk/rooms/14531512?s=51',
-        'https://www.airbnb.co.uk/rooms/19278160?s=51',
-        'https://www.airbnb.co.uk/rooms/19292873?s=51',
-    ]
+    with open('sample_data.txt', 'r') as f:
+        data = f.read()
+
+    urls = data.split('\n')
 
     for url in urls:
         try:
