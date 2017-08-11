@@ -28,6 +28,7 @@ from bs4 import BeautifulSoup
 from threading import Thread
 import requests
 import json
+import time
 
 
 # ------------------------------------------------------------------------ #
@@ -268,6 +269,7 @@ class Scraper(Thread):
 
 
 def main():
+    start_time = time.time()
 
     with open('sample_data.txt', 'r') as f:
         data = f.read()
@@ -289,6 +291,8 @@ def main():
 
     for t in threads:
         t.join()
+
+    print('Execution time: ', time.time() - start_time)
 
     return
 
