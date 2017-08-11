@@ -20,7 +20,8 @@
 
   - - -
 
-  This module requires BeautifulSoup, requests, json and a HTML/XML parser, e.g. html5lib.
+  This module requires an XML/HTML parser, e.g. html5lib. lxml is faster for Linux, but is awkward to
+  install on Windows.
 
 """
 
@@ -271,12 +272,13 @@ class Scraper(Thread):
 def main():
     start_time = time.time()
 
+    # Read in data from file and split on return carriages.
     with open('sample_data.txt', 'r') as f:
-        data = f.read()
+        urls = f.read().split('\n')
 
-    urls = data.split('\n')
-
-    # Number of threads
+    # Number of threads to spawn. This can be equal to the number of URLs to spawn one thread
+    # per URL, however this should be reduced for a large number of URLs. Measuring and testing
+    # id the way forward with deciding this value.
     no_threads = 6
 
     # Split URL list down into equal number of chunks to number of threads:
