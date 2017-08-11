@@ -25,6 +25,7 @@
 """
 
 from bs4 import BeautifulSoup
+from threading import Thread
 import requests
 import json
 
@@ -181,6 +182,88 @@ def print_report(report_data):
 
     return
 
+
+def divide_list(input_list, n):
+
+    """ Split a list into 'n' number of chunks of approximately equal length.
+
+    Based on example given here:
+        https://stackoverflow.com/questions/2130016/splitting-a-list-of-into-n-parts-of-approximately-equal-length
+
+    :param input_list: list
+        list to be split
+    :param n: int
+        number of chunks to split list into
+    :return: list
+        list of lists (chunks)
+    """
+
+    avg = len(input_list) / float(n)
+    last = 0.0
+    divided = []
+
+    while last < len(input_list):
+        divided.append(input_list[int(last):int(last + avg)])
+        last += avg
+
+    return divided
+
+# ------------------------------------------------------------------------ #
+
+
+class Scraper(Thread):
+
+    """ Subclass of Thread :-
+    Defines a thread worker for running the scraper. Spawn one Scraper instance per
+    thread to be executed - each thread can accept either a URL or a list of URLs to
+    iterate through.
+
+    """
+
+    def __init__(self, urls):
+
+        super(Scraper, self).__init__()
+
+        # Ensure URL list is of list type:
+        if type(urls) is str:
+            self.urls = [urls]
+
+        else:
+            self.urls = urls
+
+    def run(self):
+
+        """ Iterate through URLs supplied, parse and print report.
+
+        :return: None
+        """
+
+        for url in self.urls:
+            try:
+                # Use requests to retrieve web page data
+                print(url)
+                response = session.get(url, )  # allow_redirects=True)
+
+                if response.status_code != 200:
+                    print('Failed to retrieve page, URL: {0}, error: {1}\n'.format(url, response.status_code))
+                    return
+
+                # Get web page data from HTML response
+                content = get_json_data(response.text)
+
+                # Compile data into dictionary to be used for reporting
+                summary_data = generate_report(content)
+
+                # Generate/print report
+                print_report(summary_data)
+
+            except Exception as error:
+                print('Scraper failed to run for URL {0}, error: {1}, {2}\n'.format(
+                    url, type(error).__name__, error
+                ))
+
+            # time.sleep(1)  # for load concerns
+
 # ------------------------------------------------------------------------ #
 
 
@@ -191,28 +274,21 @@ def main():
 
     urls = data.split('\n')
 
-    for url in urls:
-        try:
-            # Use requests to retrieve web page data
-            response = session.get(url)
+    # Number of threads
+    no_threads = 6
 
-            if response.status_code != 200:
-                print('Failed to retrieve page, URL: {0}, error: {1}\n'.format(url, response.status_code))
-                continue
+    # Split URL list down into equal number of chunks to number of threads:
+    chunks = divide_list(urls, no_threads)
 
-            # Get web page data from HTML response
-            content = get_json_data(response.text)
+    # Create list of thread workers
+    threads = [Scraper(chunks[x])for x in range(no_threads)]
 
-            # Compile data into dictionary to be used for reporting
-            summary_data = generate_report(content)
+    # Start threads, wait for threads to complete before function returns
+    for t in threads:
+        t.start()
 
-            # Generate/print report
-            print_report(summary_data)
-
-        except Exception as error:
-            print('Scraper failed to run for URL {0}, error: {1}, {2}\n'.format(
-                url, type(error).__name__, error
-            ))
+    for t in threads:
+        t.join()
 
     return
 
