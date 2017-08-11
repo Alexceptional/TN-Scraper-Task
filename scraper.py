@@ -29,6 +29,26 @@ import requests
 import json
 
 
+# ------------------------------------------------------------------------ #
+
+# Define headers for HTTP GET request. This ensures the request appears to be a valid request from a browser,
+# rather than an automated crawler which some sites may block or throttle.
+
+headers = {
+    'Connection': 'Keep-Alive',
+    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8',
+    'Accept-Encoding': 'gzip, deflate, br',
+    'Accept-Language': 'en-GB,en-US;q=0.8,en;q=0.6',
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.90 Safari/537.36'
+}
+
+# Define a persistent session for requests, apply headers to this session:
+session = requests.Session()
+session.headers.update(headers)
+
+# ------------------------------------------------------------------------ #
+
+
 def get_json_data(page_content, parser='html5lib'):
 
     """ Scrape content from Airbnb property details pages, return page data as a
@@ -174,7 +194,7 @@ def main():
     for url in urls:
         try:
             # Use requests to retrieve web page data
-            response = requests.get(url)
+            response = session.get(url)
 
             if response.status_code != 200:
                 print('Failed to retrieve page, URL: {0}, error: {1}\n'.format(url, response.status_code))
